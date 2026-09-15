@@ -1,0 +1,23 @@
+# IDE and OS
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local secrets and configuration
+jchatmind/src/main/resources/application.yaml
+jchatmind/src/main/resources/application-local.yaml
+jchatmind/src/main/resources/application-dev.yaml
+ui/.env
+ui/.env.*
+!ui/.env.example
+
+# Local runtime data and build output
+jchatmind/data/
+jchatmind/target/
+jchatmind/META-INF/
+jchatmind/docs/
+jchatmind/output.txt
+jchatmind_assert/
+ui/node_modules/
+ui/dist/
+ui/.vite/

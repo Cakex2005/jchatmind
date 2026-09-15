@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: jchatmind
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/jchatmind}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  mail:
+    host: ${MAIL_HOST:smtp.qq.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:your-email}
+    password: ${MAIL_PASSWORD}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+  ai:
+    model:
+      chat: openai
+      embedding: openai
+      image: none
+      moderation: none
+      audio:
+        speech: none
+        transcription: none
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      base-url: ${OPENAI_BASE_URL}
+      chat:
+        options:
+          model: ${OPENAI_CHAT_MODEL:local-deepseek-v4-flash}
+      embedding:
+        options:
+          model: ${OPENAI_EMBEDDING_MODEL:local-bge-m3}
+
+mybatis:
+  type-aliases-package: com.kama.jchatmind.model.entity
+  mapper-locations: classpath:mapper/*.xml
+  type-handlers-package: com.kama.jchatmind.typehandler
+
+document:
+  storage:
+    base-path: ${DOCUMENT_STORAGE_PATH:./data/documents}
