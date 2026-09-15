@@ -8,23 +8,31 @@
         <version>3.5.8</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.kama</groupId>
+    <groupId>io.github.cakex2005</groupId>
     <artifactId>jchatmind</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>jchatmind</name>
-    <description>jchatmind</description>
-    <url/>
+    <name>JChatMind</name>
+    <description>AI agent platform built with Spring Boot, Spring AI, and React.</description>
+    <url>https://github.com/Cakex2005/jchatmind</url>
     <licenses>
-        <license/>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/license/mit</url>
+            <distribution>repo</distribution>
+        </license>
     </licenses>
     <developers>
-        <developer/>
+        <developer>
+            <id>Cakex2005</id>
+            <name>Cakex2005</name>
+            <url>https://github.com/Cakex2005</url>
+        </developer>
     </developers>
     <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
+        <connection>scm:git:https://github.com/Cakex2005/jchatmind.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/Cakex2005/jchatmind.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/Cakex2005/jchatmind</url>
     </scm>
     <properties>
         <java.version>17</java.version>
@@ -43,7 +51,7 @@
         </dependencies>
     </dependencyManagement>
 
-    <!-- 仅当前项目生效：直连公网仓库。仓库 id 不是 central/nexus，因此不会被 settings.xml 里 mirrorOf=central 的内网镜像接管 -->
+    <!-- 提供稳定的公共依赖源，避免本地镜像配置影响项目构建。 -->
     <repositories>
         <repository>
             <id>public-central</id>

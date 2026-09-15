@@ -27,8 +27,6 @@ build/
 !**/src/test/**/build/
 ### VS Code ###
 .vscode/
-src/main/resources/application-dev.yaml
-docs/project-learning-guide.md
 src/main/resources/application.yaml
 src/main/resources/application-local.yaml
 src/main/resources/application-dev.yaml

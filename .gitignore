@@ -15,7 +15,6 @@ ui/.env.*
 jchatmind/data/
 jchatmind/target/
 jchatmind/META-INF/
-jchatmind/docs/
 jchatmind/output.txt
 jchatmind_assert/
 ui/node_modules/
