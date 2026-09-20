@@ -156,7 +156,6 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
             if ("md".equalsIgnoreCase(filetype) || "markdown".equalsIgnoreCase(filetype)) {
                 processMarkdownDocument(kbId, documentId, filePath);
             } else {
-                // TODO: 未来可以增加其他文件类型的处理逻辑
                 log.warn("待新增处理的文件类型: {}", filetype);
             }
 
@@ -220,8 +219,9 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
 
                 //构造待向量文本列表，保证顺序
                 List<String> texts = sections.stream()
-                        .map(s -> s.getTitle() + '\n' + (s.getContent() == null ? "" : s.getContent()))
+                        .map(s -> s.getTitle() +  + '\n' + (s.getContent() == null ? "" : s.getContent()))
                         .toList();
+
 
                 // 批量向量化，减少调用次数限制
                 int batchSize = 30;
@@ -235,11 +235,13 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
 
                     for (int j = 0; j < batch.size(); j++) {
                         // 创建 ChunkBgeM3 实体
+                        // metadata 存 JSON，记录标题，供混合检索 BM25 做"标题优先"打分
+
                         ChunkBgeM3 chunk = ChunkBgeM3.builder()
                                 .kbId(kbId)
                                 .docId(documentId)
                                 .content(sections.get(i + j).getContent())
-                                .metadata(null)
+                                .metadata("{\"title\":\"" + escapeJson(sections.get(i + j).getTitle()) + "\"}")
                                 .embedding(embeddings.get(j))
                                 .createdAt(now)
                                 .updatedAt(now)
@@ -262,6 +264,20 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
             log.error("处理 Markdown 文档失败: documentId={}", documentId, e);
             // 不抛出异常，避免影响文档上传流程
         }
+    }
+
+    /**
+     * JSON 字符串转义（用于 metadata 中保存标题）
+     */
+    private String escapeJson(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
     }
 
     /**

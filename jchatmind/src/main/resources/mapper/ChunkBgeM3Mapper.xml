@@ -34,7 +34,7 @@
         VALUES (CAST(#{kbId} AS uuid),
                 CAST(#{docId} AS uuid),
                 #{content},
-                #{metadata},
+                CAST(#{metadata} AS jsonb),
                 #{embedding}::vector,
                 #{createdAt},
                 #{updatedAt})
@@ -45,7 +45,7 @@
                kb_id,
                doc_id,
                content,
-               metadata,
+               metadata::text AS metadata,
                embedding,
                created_at,
                updated_at
@@ -72,7 +72,7 @@
                 content = #{content},
             </if>
             <if test="metadata != null">
-                metadata = #{metadata},
+                metadata = CAST(#{metadata} AS jsonb),
             </if>
             <if test="embedding != null">
                 embedding = #{embedding}::vector,
@@ -82,13 +82,27 @@
         WHERE id = CAST(#{id} AS uuid)
     </update>
 
+    <select id="selectByKbId" resultMap="BaseResultMap">
+        SELECT id,
+               kb_id,
+               doc_id,
+               content,
+               metadata::text AS metadata,
+               embedding,
+               created_at,
+               updated_at
+        FROM chunk_bge_m3
+        WHERE kb_id = CAST(#{kbId} AS uuid)
+        ORDER BY created_at
+    </select>
+
     <select id="similaritySearch" resultMap="BaseResultMap">
         <![CDATA[
         SELECT id,
                kb_id,
                doc_id,
                content,
-               metadata,
+               metadata::text AS metadata,
                embedding,
                created_at,
                updated_at
