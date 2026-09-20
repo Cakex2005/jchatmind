@@ -218,37 +218,42 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
                 LocalDateTime now = LocalDateTime.now();
                 int chunkCount = 0;
 
-                // 为每个章节生成 chunk
-                for (MarkdownParserService.MarkdownSection section : sections) {
-                    String title = section.getTitle();
-                    String content = section.getContent();
+                //构造待向量文本列表，保证顺序
+                List<String> texts = sections.stream()
+                        .map(s -> s.getTitle() + '\n' + (s.getContent() == null ? "" : s.getContent()))
+                        .toList();
 
-                    if (title == null || title.trim().isEmpty()) {
-                        continue;
+                // 批量向量化，减少调用次数限制
+                int batchSize = 30;
+                for (int i = 0; i < texts.size(); i += batchSize) {
+                    List<String> batch = texts.subList(i, Math.min(i + batchSize, texts.size()));
+                    List<float[]> embeddings = ragService.embedBatch(batch);
+
+                    if (embeddings.size() != batch.size()) {
+                        throw new IllegalStateException("批量向量化返回数量不一致: expected=" + batch.size() + ", actual=" + embeddings.size());
                     }
 
-                    // 对标题进行 embedding
-                    float[] embedding = ragService.embed(title);
+                    for (int j = 0; j < batch.size(); j++) {
+                        // 创建 ChunkBgeM3 实体
+                        ChunkBgeM3 chunk = ChunkBgeM3.builder()
+                                .kbId(kbId)
+                                .docId(documentId)
+                                .content(sections.get(i + j).getContent())
+                                .metadata(null)
+                                .embedding(embeddings.get(j))
+                                .createdAt(now)
+                                .updatedAt(now)
+                                .build();
 
-                    // 创建 ChunkBgeM3 实体
-                    ChunkBgeM3 chunk = ChunkBgeM3.builder()
-                            .kbId(kbId)
-                            .docId(documentId)
-                            .content(content != null ? content : "")
-                            .metadata(objectMapper.writeValueAsString(title)) // 存储标题信息到 metadata
-                            .embedding(embedding)
-                            .createdAt(now)
-                            .updatedAt(now)
-                            .build();
+                        // 插入数据库
+                        int result = chunkBgeM3Mapper.insert(chunk);
 
-                    // 插入数据库
-                    int result = chunkBgeM3Mapper.insert(chunk);
-
-                    if (result > 0) {
-                        chunkCount++;
-                        log.debug("创建 chunk 成功: title={}, chunkId={}", title, chunk.getId());
-                    } else {
-                        log.warn("创建 chunk 失败: title={}", title);
+                        if (result > 0) {
+                            chunkCount++;
+                            log.debug("创建 chunk 成功: title={}, chunkId={}", sections.get(i + j).getTitle(), chunk.getId());
+                        } else {
+                            log.warn("创建 chunk 失败: title={}", sections.get(i + j).getTitle());
+                        }
                     }
                 }
                 log.info("Markdown 文档处理完成: documentId={}, 共生成 {} 个 chunks", documentId, chunkCount);

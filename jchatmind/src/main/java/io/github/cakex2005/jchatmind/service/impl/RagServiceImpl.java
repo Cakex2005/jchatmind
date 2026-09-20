@@ -26,20 +26,22 @@ public class RagServiceImpl implements RagService {
         private float[] embedding;
     }
 
-    private float[] doEmbed(String text) {
-        return embeddingModel.embed(text);
+    private float[] doEmbed(String query) {
+        return embeddingModel.embed(query);
     }
 
     @Override
-    public float[] embed(String text) {
-        return doEmbed(text);
+    public List<float[]> embedBatch(List<String> batch) {
+        return embeddingModel.embed(batch);
     }
 
     @Override
-    public List<String> similaritySearch(String kbId, String title) {
-        String queryEmbedding = toPgVector(doEmbed(title));
-        List<ChunkBgeM3> chunks = chunkBgeM3Mapper.similaritySearch(kbId, queryEmbedding, 3);
-        return chunks.stream().map(ChunkBgeM3::getContent).toList();
+    public List<String> similaritySearch(String kbId, String query) {
+        String queryEmbedding = toPgVector(doEmbed(query));
+        List<ChunkBgeM3> queryChunks = chunkBgeM3Mapper.similaritySearch(kbId, queryEmbedding, 10);
+
+
+        return queryChunks.stream().map(ChunkBgeM3::getContent).toList();
     }
 
     private String toPgVector(float[] v) {
