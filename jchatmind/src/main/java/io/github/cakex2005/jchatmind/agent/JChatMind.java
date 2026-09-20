@@ -219,8 +219,9 @@ public class JChatMind {
     // thinkPrompt 应该放到 system 中还是
     private boolean think() {
         String thinkPrompt = """
-                现在你是一个智能的的具体「决策模块」
+                现在你是一个智能体的具体「决策模块」
                 请根据当前对话上下文，决定下一步的动作。
+                若已无需调用工具，则直接思考并回答问题。
                                 \s
                 【额外信息】
                 - 你目前拥有的知识库列表以及描述：%s

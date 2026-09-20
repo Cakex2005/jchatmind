@@ -1,6 +1,7 @@
 package io.github.cakex2005.jchatmind.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cakex2005.jchatmind.converter.DocumentConverter;
 import io.github.cakex2005.jchatmind.exception.BizException;
 import io.github.cakex2005.jchatmind.mapper.DocumentMapper;
@@ -41,6 +42,7 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
     private final MarkdownParserService markdownParserService;
     private final RagService ragService;
     private final ChunkBgeM3Mapper chunkBgeM3Mapper;
+    private final ObjectMapper objectMapper;
 
     @Override
     public GetDocumentsResponse getDocuments() {
@@ -142,19 +144,11 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
             String filePath = documentStorageService.saveFile(kbId, documentId, file);
 
             // 更新文档记录，保存文件路径到 metadata
-            DocumentDTO.MetaData metadata = new DocumentDTO.MetaData();
-            metadata.setFilePath(filePath);
-            documentDTO.setMetadata(metadata);
-            documentDTO.setId(documentId);
-            documentDTO.setCreatedAt(now);
-            documentDTO.setUpdatedAt(now);
+            DocumentDTO.MetaData meta = new DocumentDTO.MetaData();
+            meta.setFilePath(filePath);
+            document.setMetadata(objectMapper.writeValueAsString(meta));
 
-            Document updatedDocument = documentConverter.toEntity(documentDTO);
-            updatedDocument.setId(documentId);
-            updatedDocument.setCreatedAt(now);
-            updatedDocument.setUpdatedAt(now);
-
-            documentMapper.updateById(updatedDocument);
+            documentMapper.updateById(document);
 
             log.info("文档上传成功: kbId={}, documentId={}, filename={}", kbId, documentId, originalFilename);
 
@@ -214,7 +208,7 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
                 // 解析 Markdown 文件
                 List<MarkdownParserService.MarkdownSection> sections = markdownParserService.parseMarkdown(inputStream);
 
-                System.out.println(sections);
+                //System.out.println(sections);
 
                 if (sections.isEmpty()) {
                     log.warn("Markdown 文档解析后没有找到任何章节: documentId={}", documentId);
@@ -241,7 +235,7 @@ public class DocumentFacadeServiceImpl implements DocumentFacadeService {
                             .kbId(kbId)
                             .docId(documentId)
                             .content(content != null ? content : "")
-                            .metadata(null) // 可以存储标题信息到 metadata
+                            .metadata(objectMapper.writeValueAsString(title)) // 存储标题信息到 metadata
                             .embedding(embedding)
                             .createdAt(now)
                             .updatedAt(now)
